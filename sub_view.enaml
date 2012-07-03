@@ -29,6 +29,10 @@ SubView(MainWindow):
             Slider:
                 id: length
                 value := model.Lv
+            Label:
+                text << "Fb = %5.1f Hz" % model.Fb
+            Label:
+                text << "F3 = %5.1f Hz" % model.F3
         EnableCanvas:
             id: plot_window
             component = plot.get_plot_component()
