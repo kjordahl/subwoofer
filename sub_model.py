@@ -102,7 +102,13 @@ class Driver(HasTraits):
                     'Qts' : 0.28,
                     'Fs' : 25.0,
                     'Xmax' : 16.0,
-                    'Dia' : 12 * 2.54}
+                    'Dia' : 12 * 2.54},
+    'Eminence 15HE67 (15")' : { # http://www.speakerworks.com/15_inch_Eminence_Woofer_p/15he67.htm
+                    'Vas' : 308.74,
+                    'Qts' : .550,
+                    'Fs' : 22.57,
+                    'Xmax' : 9.80,
+                    'Dia' : 15 * 2.54}
                     }
 
 def main():
