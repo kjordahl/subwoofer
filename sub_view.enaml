@@ -1,0 +1,26 @@
+SubView(MainWindow):
+    attr model
+    attr plot
+    title = "Subwoofer"
+    Container:
+        constraints = [
+            hbox(plot_window, controls),
+            align('top', plot_window, controls),
+            plot_window.height >= 600,
+            plot_window.width >= 600,
+        ]
+        Form:
+            id: controls
+            Label:
+                text = "Volume (l)"
+            Slider:
+                id: volume
+                value := model.Vb
+            Label:
+                text = "Port length (cm)"
+            Slider:
+                id: length
+                value := model.Lv
+        EnableCanvas:
+            id: plot_window
+            component = plot.get_plot_component()
