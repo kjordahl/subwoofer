@@ -22,7 +22,6 @@ class Enclosure(HasTraits):
     def __init__(self, driver):
         self.driver = driver
         self.F = np.arange(20, 400, 2)
-        self.Vb = 20 * driver.Qts**3.3 * driver.Vas
         self.calculate_box()
         # port calculation
         # length of port (cm)
@@ -34,6 +33,7 @@ class Enclosure(HasTraits):
         self.plot = plot
 
     def calculate_box(self):
+        self.Vb = 20 * self.driver.Qts**3.3 * self.driver.Vas
         self.Fb = (self.driver.Vas / self.Vb)**0.31 * self.driver.Fs
         self.F3 = (self.driver.Vas / self.Vb)**0.44 * self.driver.Fs
         self.dBpeak = 20 * np.log(self.driver.Qts * (self.driver.Vas / self.Vb) ** 0.3 / 0.4)
@@ -48,7 +48,6 @@ class Enclosure(HasTraits):
         self.dBmag = 10 * np.log(Fn4**2 / ((Fn4 - C * Fn2 + A)**2 + Fn2 * (D * Fn2 - B)**2))
 
     def _Vb_changed(self):
-        self.calculate_box()
         self.calculate_response()
         try:
             self.plot.update_plotdata()
@@ -65,15 +64,27 @@ class Driver(HasTraits):
     drivernames = List
 
     def __init__(self, drivername=None):
-        params = self.param_dict()
-        drivernames = params.keys()
         if drivername is not None:
             self.drivername = drivername
+        self.get_params()
+
+    def set_enclosure(self, enclosure):
+        self.enclosure = enclosure
+
+    def get_params(self):
+        params = self.param_dict()
+        self.drivernames = params.keys()
         self.Vas = params[self.drivername]['Vas']
         self.Qts = params[self.drivername]['Qts']
         self.Fs = params[self.drivername]['Fs']
         self.Xmax = params[self.drivername]['Xmax']
         self.Dia = params[self.drivername]['Dia']
+
+    def _drivername_changed(self):
+        self.get_params()
+        self.enclosure.calculate_box()
+        self.enclosure.calculate_response()
+        self.enclosure.plot.update_plotdata()
 
     def param_dict(self):
         return {'1260W': {    # Infinity 1260W technical reference data
@@ -83,16 +94,17 @@ class Driver(HasTraits):
                     'Xmax' : 13.0,
                     'Dia' : 12 * 2.54},
                 'TIW 300': {    # http://www.visaton.com/en/chassis_zubehoer/tiefton/tiw300_8.html
-                    'Vas' : 92.96,
-                    'Qts' : 0.39,
-                    'Fs' : 23.50,
-                    'Xmax' : 13.0,
+                    'Vas' : 160.0,
+                    'Qts' : 0.28,
+                    'Fs' : 25.0,
+                    'Xmax' : 16.0,
                     'Dia' : 12 * 2.54}
                     }
 
 def main():
     driver = Driver('1260W')
     sub = Enclosure(driver)
+    driver.set_enclosure(sub)
     plot = FrequencyPlot(sub)
     sub.set_plot(plot)
 

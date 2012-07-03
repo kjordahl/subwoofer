@@ -12,6 +12,12 @@ SubView(MainWindow):
         Form:
             id: controls
             Label:
+                text = "Driver"
+            ComboBox:
+                id: driver
+                items = model.driver.drivernames
+                value := model.driver.drivername
+            Label:
                 text << "Volume: %5.1f l " % model.Vb
             Slider:
                 id: volume
