@@ -72,7 +72,7 @@ class Driver(HasTraits):
         self.enclosure = enclosure
 
     def get_params(self):
-        params = self.param_dict()
+        params = self.param_dict
         self.drivernames = params.keys()
         self.Vas = params[self.drivername]['Vas']
         self.Qts = params[self.drivername]['Qts']
@@ -86,6 +86,7 @@ class Driver(HasTraits):
         self.enclosure.calculate_response()
         self.enclosure.plot.update_plotdata()
 
+    @property
     def param_dict(self):
         return {'1260W': {    # Infinity 1260W technical reference data
                     'Vas' : 92.96,
