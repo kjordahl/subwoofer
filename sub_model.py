@@ -61,36 +61,34 @@ class Driver(HasTraits):
     Fs = Float                   # Free-air resonance (Hz)
     Xmax = Float                 # Max excursion, mm
     Dia = Float                  # driver diameter
+    drivername = Str('1260W')
+    drivernames = List
 
-    def __init__(self, drivername):
-        params = ts(drivername)
-        self.Vas = params['Vas']
-        self.Qts = params['Qts']
-        self.Fs = params['Fs']
-        self.Xmax = params['Xmax']
-        self.Dia = params['Dia']
+    def __init__(self, drivername=None):
+        params = self.param_dict()
+        drivernames = params.keys()
+        if drivername is not None:
+            self.drivername = drivername
+        self.Vas = params[self.drivername]['Vas']
+        self.Qts = params[self.drivername]['Qts']
+        self.Fs = params[self.drivername]['Fs']
+        self.Xmax = params[self.drivername]['Xmax']
+        self.Dia = params[self.drivername]['Dia']
 
-def ts(drivername):
-    """Return Thiele-Small parameters for a given driver)
-    """
-    params = {'1260W': {    # Infinity 1260W technical reference data
-                  'Vas' : 92.96,
-                  'Qts' : 0.39,
-                  'Fs' : 23.50,
-                  'Xmax' : 13.0,
-                  'Dia' : 12 * 2.54},
-              'TIW 300': {    # http://www.visaton.com/en/chassis_zubehoer/tiefton/tiw300_8.html
-                  'Vas' : 92.96,
-                  'Qts' : 0.39,
-                  'Fs' : 23.50,
-                  'Xmax' : 13.0,
-                  'Dia' : 12 * 2.54}
-                  }
-    try:
-        return params[drivername]
-    except KeyError:
-        return None
-              
+    def param_dict(self):
+        return {'1260W': {    # Infinity 1260W technical reference data
+                    'Vas' : 92.96,
+                    'Qts' : 0.39,
+                    'Fs' : 23.50,
+                    'Xmax' : 13.0,
+                    'Dia' : 12 * 2.54},
+                'TIW 300': {    # http://www.visaton.com/en/chassis_zubehoer/tiefton/tiw300_8.html
+                    'Vas' : 92.96,
+                    'Qts' : 0.39,
+                    'Fs' : 23.50,
+                    'Xmax' : 13.0,
+                    'Dia' : 12 * 2.54}
+                    }
 
 def main():
     driver = Driver('1260W')
