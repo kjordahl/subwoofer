@@ -18,10 +18,13 @@ class Enclosure(HasTraits):
     Np = Int(1)
     Ql = Float(7)
     k = Float(0.732)
+    Fmin = 20                           # min F, Hz
+    Fmax = 400                          # max F, Hz
+    nF = 100                            # number of F values to sample for graph
 
     def __init__(self, driver):
         self.driver = driver
-        self.F = np.arange(20, 400, 2)
+        self.F = np.logspace(np.log10(self.Fmin), np.log10(self.Fmax), self.nF)
         self.calculate_box()
         # port calculation
         # length of port (cm)
