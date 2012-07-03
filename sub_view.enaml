@@ -12,12 +12,14 @@ SubView(MainWindow):
         Form:
             id: controls
             Label:
-                text = "Volume (l)"
+                text << "Volume: %5.1f l " % model.Vb
             Slider:
                 id: volume
+                minimum = 10
+                maximum = 150
                 value := model.Vb
             Label:
-                text = "Port length (cm)"
+                text << "Port length: %5.1f cm " % model.Lv
             Slider:
                 id: length
                 value := model.Lv

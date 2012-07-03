@@ -48,24 +48,52 @@ class Enclosure(HasTraits):
         self.dBmag = 10 * np.log(Fn4**2 / ((Fn4 - C * Fn2 + A)**2 + Fn2 * (D * Fn2 - B)**2))
 
     def _Vb_changed(self):
-        print self.Vb
         self.calculate_box()
         self.calculate_response()
-        self.plot.update_plotdata()
+        try:
+            self.plot.update_plotdata()
+        except AttributeError:
+            pass
         
 class Driver(HasTraits):
-    # Infinity 1260W technical reference data
-    Vas = Float(82.96)                  # compliance volume (liters)
-    Qts = Float(0.39)                   # Total Q
-    Fs = Float(23.50)                   # Free-air resonance (Hz)
-    Xmax = Float(13.00)                 # Max excursion, mm
-    Dia = Float(12 * 2.54)              # 12-in driver
+    Vas = Float                  # compliance volume (liters)
+    Qts = Float                  # Total Q
+    Fs = Float                   # Free-air resonance (Hz)
+    Xmax = Float                 # Max excursion, mm
+    Dia = Float                  # driver diameter
 
-    def __init__(self):
-        pass
+    def __init__(self, drivername):
+        params = ts(drivername)
+        self.Vas = params['Vas']
+        self.Qts = params['Qts']
+        self.Fs = params['Fs']
+        self.Xmax = params['Xmax']
+        self.Dia = params['Dia']
+
+def ts(drivername):
+    """Return Thiele-Small parameters for a given driver)
+    """
+    params = {'1260W': {    # Infinity 1260W technical reference data
+                  'Vas' : 92.96,
+                  'Qts' : 0.39,
+                  'Fs' : 23.50,
+                  'Xmax' : 13.0,
+                  'Dia' : 12 * 2.54},
+              'TIW 300': {    # http://www.visaton.com/en/chassis_zubehoer/tiefton/tiw300_8.html
+                  'Vas' : 92.96,
+                  'Qts' : 0.39,
+                  'Fs' : 23.50,
+                  'Xmax' : 13.0,
+                  'Dia' : 12 * 2.54}
+                  }
+    try:
+        return params[drivername]
+    except KeyError:
+        return None
+              
 
 def main():
-    driver = Driver()
+    driver = Driver('1260W')
     sub = Enclosure(driver)
     plot = FrequencyPlot(sub)
     sub.set_plot(plot)
