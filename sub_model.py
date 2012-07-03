@@ -34,11 +34,11 @@ class Enclosure(HasTraits):
 
     def calculate_box(self):
         self.Vb = 20 * self.driver.Qts**3.3 * self.driver.Vas
+
+    def calculate_response(self):
         self.Fb = (self.driver.Vas / self.Vb)**0.31 * self.driver.Fs
         self.F3 = (self.driver.Vas / self.Vb)**0.44 * self.driver.Fs
         self.dBpeak = 20 * np.log(self.driver.Qts * (self.driver.Vas / self.Vb) ** 0.3 / 0.4)
-
-    def calculate_response(self):
         Fn2 = (self.F / self.driver.Fs) ** 2
         Fn4 = Fn2 ** 2
         A = (self.Fb / self.driver.Fs) ** 2
