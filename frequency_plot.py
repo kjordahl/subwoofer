@@ -1,4 +1,4 @@
-from chaco.api import Plot, ArrayPlotData
+from chaco.api import Plot, ArrayPlotData, PlotAxis
 from traits.api import HasTraits, Instance, Bool, Enum
 
 class FrequencyPlot(HasTraits):
@@ -21,4 +21,14 @@ class FrequencyPlot(HasTraits):
         self.plotdata.set_data("index", self.model.F)
         self.plotdata.set_data("response", self.model.dBmag)
         self.plot.plot(("index", "response"), type="line", index_scale="log")
+        left = PlotAxis(orientation='left',
+                        title='response (dB)',
+                        mapper=self.plot.value_mapper,
+                        component=self.plot)
+        bottom = PlotAxis(orientation='bottom',
+                        title='Frequency (Hz)',
+                        mapper=self.plot.index_mapper,
+                        component=self.plot)
+        self.plot.underlays.append(left)
+        self.plot.underlays.append(bottom)
         return self.plot
