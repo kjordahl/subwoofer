@@ -88,7 +88,7 @@ class Driver(HasTraits):
         self.Qts = self.config.getfloat(self.drivername, 'Qts')
         self.Fs = self.config.getfloat(self.drivername, 'Fs')
         self.Xmax = self.config.getfloat(self.drivername, 'Xmax')
-        self.Dia = 2.54 * self.config.getfloat(self.drivername, 'Dia')
+        self.Dia = self.config.getfloat(self.drivername, 'Dia')
 
     def _drivername_changed(self):
         try:
