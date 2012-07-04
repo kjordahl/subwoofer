@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import ConfigParser
 import numpy as np
 import matplotlib.pyplot as plt
 from traits.api import (HasTraits, Int, Float, Bool, Enum, Str,
@@ -63,56 +64,48 @@ class Driver(HasTraits):
     Fs = Float                   # Free-air resonance (Hz)
     Xmax = Float                 # Max excursion, mm
     Dia = Float                  # driver diameter
-    drivername = Str('1260W')
+    drivername = Str
     drivernames = List
 
     def __init__(self, drivername=None):
         if drivername is not None:
             self.drivername = drivername
-        self.get_params()
+        self.get_config()
 
     def set_enclosure(self, enclosure):
         self.enclosure = enclosure
 
+    def get_config(self):
+        self.config = ConfigParser.RawConfigParser()
+        self.config.read('params.cfg')
+        self.drivernames = self.config.sections()
+        if self.drivername is None or not self.drivername in self.drivernames:
+            self.drivername = self.drivernames[0]
+        self.get_params()
+
     def get_params(self):
-        params = self.param_dict
-        self.drivernames = params.keys()
-        self.Vas = params[self.drivername]['Vas']
-        self.Qts = params[self.drivername]['Qts']
-        self.Fs = params[self.drivername]['Fs']
-        self.Xmax = params[self.drivername]['Xmax']
-        self.Dia = params[self.drivername]['Dia']
+        self.Vas = self.config.getfloat(self.drivername, 'Vas')
+        self.Qts = self.config.getfloat(self.drivername, 'Qts')
+        self.Fs = self.config.getfloat(self.drivername, 'Fs')
+        self.Xmax = self.config.getfloat(self.drivername, 'Xmax')
+        self.Dia = 2.54 * self.config.getfloat(self.drivername, 'Dia')
 
     def _drivername_changed(self):
-        self.get_params()
-        self.enclosure.calculate_box()
-        self.enclosure.calculate_response()
-        self.enclosure.plot.update_plotdata()
+        try:
+            self.get_params()
+            self.enclosure.calculate_box()
+            self.enclosure.calculate_response()
+            self.enclosure.plot.update_plotdata()
+        except AttributeError:
+            pass                        # driver params not yet set
 
     @property
     def param_dict(self):
-        return {'1260W': {    # Infinity 1260W technical reference data
-                    'Vas' : 92.96,
-                    'Qts' : 0.39,
-                    'Fs' : 23.50,
-                    'Xmax' : 13.0,
-                    'Dia' : 12 * 2.54},
-                'TIW 300': {    # http://www.visaton.com/en/chassis_zubehoer/tiefton/tiw300_8.html
-                    'Vas' : 160.0,
-                    'Qts' : 0.28,
-                    'Fs' : 25.0,
-                    'Xmax' : 16.0,
-                    'Dia' : 12 * 2.54},
-    'Eminence 15HE67 (15")' : { # http://www.speakerworks.com/15_inch_Eminence_Woofer_p/15he67.htm
-                    'Vas' : 308.74,
-                    'Qts' : .550,
-                    'Fs' : 22.57,
-                    'Xmax' : 9.80,
-                    'Dia' : 15 * 2.54}
-                    }
+        config = ConfigParser.RawConfigParser()
+        config.read('example.cfg')
 
 def main():
-    driver = Driver('1260W')
+    driver = Driver()
     sub = Enclosure(driver)
     driver.set_enclosure(sub)
     plot = FrequencyPlot(sub)

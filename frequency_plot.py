@@ -4,8 +4,6 @@ from traits.api import HasTraits, Instance, Bool, Enum
 class FrequencyPlot(HasTraits):
     plot = Instance(Plot)
     plotdata = Instance(ArrayPlotData, ())
-    plot_all = Bool(False)
-    yscale = Enum(['linear', 'log'])
 
     def __init__(self, model):
         super(FrequencyPlot, self).__init__(model=model)
