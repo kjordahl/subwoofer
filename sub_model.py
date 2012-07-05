@@ -9,8 +9,7 @@ from traits.api import (HasTraits, Int, Float, Bool, Enum, Str,
 from frequency_plot import FrequencyPlot
 
 class Enclosure(HasTraits):
-    # 3 inch tube
-    Dv = Float(3.0 * 2.54)              # 3 inch tube
+    """Base class for a speaker enclosure"""
     Vb = Float
     Lv = Float
     Fb = Float
@@ -18,7 +17,6 @@ class Enclosure(HasTraits):
     dBpeak = Float
     Np = Int(1)
     Ql = Float(7)
-    k = Float(0.732)
     Fmin = 20                           # min F, Hz
     Fmax = 400                          # max F, Hz
     nF = 100                            # number of F values to sample for graph
@@ -27,17 +25,37 @@ class Enclosure(HasTraits):
         self.driver = driver
         self.F = np.logspace(np.log10(self.Fmin), np.log10(self.Fmax), self.nF)
         self.calculate_box()
-        # port calculation
-        # length of port (cm)
-        self.Lv = (23562.5 * self.Dv**2 * self.Np /
-                   (self.Fb**2 * self.Vb)) - (self.k * self.Dv)
         self.calculate_response()
 
     def set_plot(self, plot):
         self.plot = plot
 
     def calculate_box(self):
+        raise NotImplementedError
+
+    def calculate_response(self):
+        raise NotImplementedError
+
+    def _Vb_changed(self):
+        self.calculate_response()
+        try:
+            self.plot.update_plotdata()
+        except AttributeError:
+            pass
+
+class PortedEnclosure(Enclosure):
+    """Calculate response for a ported enclosure
+    http://www.diysubwoofers.org/prt
+    """
+    Dv = Float(3.0 * 2.54)              # 3 inch tube
+    k = Float(0.732)
+
+    def calculate_box(self):
         self.Vb = 20 * self.driver.Qts**3.3 * self.driver.Vas
+        # port calculation
+        # length of port (cm)
+        self.Lv = (23562.5 * self.Dv**2 * self.Np /
+                   (self.Fb**2 * self.Vb)) - (self.k * self.Dv)
 
     def calculate_response(self):
         self.Fb = (self.driver.Vas / self.Vb)**0.31 * self.driver.Fs
@@ -51,12 +69,6 @@ class Enclosure(HasTraits):
         D = 1 / self.driver.Qts + self.Fb / (self.driver.Fs * self.Ql)
         self.dBmag = 10 * np.log(Fn4**2 / ((Fn4 - C * Fn2 + A)**2 + Fn2 * (D * Fn2 - B)**2))
 
-    def _Vb_changed(self):
-        self.calculate_response()
-        try:
-            self.plot.update_plotdata()
-        except AttributeError:
-            pass
         
 class Driver(HasTraits):
     Vas = Float                  # compliance volume (liters)
@@ -106,7 +118,7 @@ class Driver(HasTraits):
 
 def main():
     driver = Driver()
-    sub = Enclosure(driver)
+    sub = PortedEnclosure(driver)
     driver.set_enclosure(sub)
     plot = FrequencyPlot(sub)
     sub.set_plot(plot)
