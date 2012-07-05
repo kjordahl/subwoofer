@@ -70,6 +70,30 @@ class PortedEnclosure(Enclosure):
         self.dBmag = 10 * np.log(Fn4**2 / ((Fn4 - C * Fn2 + A)**2 + Fn2 * (D * Fn2 - B)**2))
 
         
+class SealedEnclosure(Enclosure):
+    """Calculate response for a sealed enclosure
+    http://www.diysubwoofers.org/sld
+    NOT YET WORKING
+    """
+    Qtc = 0.7                           # where does this come from?
+
+    def calculate_box(self):
+        self.Qr = self.Qtc / self.driver.Qts
+        self.Vr = self.Qr**2 - 1
+        self.Vb = self.driver.Vas / self.Vr
+
+    def calculate_response(self):
+        self.Fb = self.Qr * self.driver.Fs
+        self.F3 = self.Fb * ((1 / self.Qtc**2 - 2 +
+                         ((1 / self.Qtc**2 - 2)**2 + 4)**0.5) / 2)**0.5
+        if self.Qtc > np.sqrt(0.5):
+            dBpeak = 20 * np.log(self.Qtc**2 / (self.Qtc**2 - 0.25)**0.5)
+        else:
+            dBpeak = 0
+        Fr = (self.F / self.Fb)**2
+        self.dBmag = 10 * np.log(Fr**2 / ((Fr - 1)**2 + Fr / self.Qtc**2))
+
+
 class Driver(HasTraits):
     Vas = Float                  # compliance volume (liters)
     Qts = Float                  # Total Q
