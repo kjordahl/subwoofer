@@ -7,7 +7,7 @@ Author: Kelsey Jordahl
 Version: alpha
 Copyright: Kelsey Jordahl 2012
 License: GPLv3
-Time-stamp: <Thu Jul  5 08:50:27 EDT 2012>
+Time-stamp: <Thu Jul  5 18:13:39 EDT 2012>
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -26,7 +26,7 @@ import ConfigParser
 import numpy as np
 import matplotlib.pyplot as plt
 from traits.api import (HasTraits, Int, Float, Bool, Enum, Str,
-                        List, Range, Array)
+                        List, Range, Array, on_trait_change)
 from frequency_plot import FrequencyPlot
 
 class Enclosure(HasTraits):
@@ -73,13 +73,13 @@ class PortedEnclosure(Enclosure):
 
     def calculate_box(self):
         self.Vb = 20 * self.driver.Qts**3.3 * self.driver.Vas
+
+    def calculate_response(self):
+        self.Fb = (self.driver.Vas / self.Vb)**0.31 * self.driver.Fs
         # port calculation
         # length of port (cm)
         self.Lv = (23562.5 * self.Dv**2 * self.Np /
                    (self.Fb**2 * self.Vb)) - (self.k * self.Dv)
-
-    def calculate_response(self):
-        self.Fb = (self.driver.Vas / self.Vb)**0.31 * self.driver.Fs
         self.F3 = (self.driver.Vas / self.Vb)**0.44 * self.driver.Fs
         self.dBpeak = 20 * np.log(self.driver.Qts * (self.driver.Vas / self.Vb) ** 0.3 / 0.4)
         Fn2 = (self.F / self.driver.Fs) ** 2
@@ -89,6 +89,13 @@ class PortedEnclosure(Enclosure):
         C = 1 + A + (self.driver.Vas / self.Vb) + self.Fb / (self.driver.Fs * self.driver.Qts * self.Ql)
         D = 1 / self.driver.Qts + self.Fb / (self.driver.Fs * self.Ql)
         self.dBmag = 10 * np.log(Fn4**2 / ((Fn4 - C * Fn2 + A)**2 + Fn2 * (D * Fn2 - B)**2))
+
+    def _Dv_changed(self):
+        try:
+            self.calculate_response()
+            self.plot.update_plotdata()
+        except AttributeError, er:
+            print er
 
         
 class SealedEnclosure(Enclosure):

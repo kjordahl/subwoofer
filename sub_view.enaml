@@ -7,7 +7,7 @@ SubView(MainWindow):
             hbox(plot_window, controls),
             align('top', plot_window, controls),
             plot_window.height >= 600,
-            plot_window.width >= 700,
+            plot_window.width >= 600,
         ]
         Form:
             id: controls
@@ -19,16 +19,22 @@ SubView(MainWindow):
                 value := model.driver.drivername
             Label:
                 text << "Volume: %5.1f l " % model.Vb
-            Slider:
+            FloatSlider:
                 id: volume
                 minimum = 10
                 maximum = 150
                 value := model.Vb
             Label:
+                text << "Port diameter: %5.1f cm " % model.Dv
+            FloatSlider:
+                id: port_diameter
+                minimum = 1
+                maximum = 20
+                value := model.Dv
+            Label:
                 text << "Port length: %5.1f cm " % model.Lv
-            Slider:
-                id: length
-                value := model.Lv
+            Label:
+                text << "Peak output: %5.1f dB" % model.dBpeak
             Label:
                 text << "Fb = %5.1f Hz" % model.Fb
             Label:
