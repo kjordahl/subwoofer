@@ -34,7 +34,7 @@ SubView(MainWindow):
             Label:
                 text << "Port length: %5.1f cm " % model.Lv
             Label:
-                text << "Peak output: %5.1f dB" % model.dBpeak
+                text << "Min port diam: %5.1f cm" % model.Dmin
             Label:
                 text << "Fb = %5.1f Hz" % model.Fb
             Label:

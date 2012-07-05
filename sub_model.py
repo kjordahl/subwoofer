@@ -7,7 +7,7 @@ Author: Kelsey Jordahl
 Version: alpha
 Copyright: Kelsey Jordahl 2012
 License: GPLv3
-Time-stamp: <Thu Jul  5 18:13:39 EDT 2012>
+Time-stamp: <Thu Jul  5 18:24:27 EDT 2012>
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -36,7 +36,6 @@ class Enclosure(HasTraits):
     Fb = Float
     F3 = Float
     dBpeak = Float
-    Np = Int(1)
     Ql = Float(7)
     Fmin = 20                           # min F, Hz
     Fmax = 400                          # max F, Hz
@@ -69,17 +68,24 @@ class PortedEnclosure(Enclosure):
     http://www.diysubwoofers.org/prt
     """
     Dv = Float(3.0 * 2.54)              # 3 inch tube
+    Np = Int(1)
     k = Float(0.732)
 
     def calculate_box(self):
         self.Vb = 20 * self.driver.Qts**3.3 * self.driver.Vas
 
-    def calculate_response(self):
-        self.Fb = (self.driver.Vas / self.Vb)**0.31 * self.driver.Fs
+    def min_port_diam(self):
         # port calculation
+        Sd = np.pi * (self.driver.Dia * 2.54 / 100)**2 / 4
+        Vd = Sd * self.driver.Xmax / 1000
+        self.Dmin = 100 * (20.3 * (Vd**2 / self.Fb)**0.25) / self.Np**0.5
         # length of port (cm)
         self.Lv = (23562.5 * self.Dv**2 * self.Np /
                    (self.Fb**2 * self.Vb)) - (self.k * self.Dv)
+
+    def calculate_response(self):
+        self.Fb = (self.driver.Vas / self.Vb)**0.31 * self.driver.Fs
+        self.min_port_diam()
         self.F3 = (self.driver.Vas / self.Vb)**0.44 * self.driver.Fs
         self.dBpeak = 20 * np.log(self.driver.Qts * (self.driver.Vas / self.Vb) ** 0.3 / 0.4)
         Fn2 = (self.F / self.driver.Fs) ** 2
