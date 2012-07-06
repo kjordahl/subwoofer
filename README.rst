@@ -15,8 +15,8 @@ Requirements
 ------------
 * Python 2.6 or 2.7
 * NumPy
-* `Traits <http://code.enthought.com/projects/traits>`
-* `Enaml <https://github.com/enthought/enaml>`
-* `Chaco <http://code.enthought.com/projects/chaco>`
+* `Traits <http://code.enthought.com/projects/traits>`_
+* `Enaml <https://github.com/enthought/enaml>`_
+* `Chaco <http://code.enthought.com/projects/chaco>`_
 
-All of the above requirements are met by the `Enthought Python Distribution (EPD) <http://www.enthought.com/products/epd.php>`, including `EPD Free <http://www.enthought.com/products/epd_free.php>`.
+All of the above requirements are met by the `Enthought Python Distribution (EPD) <http://www.enthought.com/products/epd.php>`_, including `EPD Free <http://www.enthought.com/products/epd_free.php>`_.
