@@ -7,7 +7,7 @@ Author: Kelsey Jordahl
 Version: alpha
 Copyright: Kelsey Jordahl 2012
 License: GPLv3
-Time-stamp: <Thu Jul  5 18:24:27 EDT 2012>
+Time-stamp: <Fri Jul  6 19:14:47 EDT 2012>
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -37,6 +37,8 @@ class Enclosure(HasTraits):
     F3 = Float
     dBpeak = Float
     Ql = Float(7)
+    Vmin = Float(10)
+    Vmax = Float(150)
     Fmin = 20                           # min F, Hz
     Fmax = 400                          # max F, Hz
     nF = 100                            # number of F values to sample for graph
@@ -109,7 +111,13 @@ class SealedEnclosure(Enclosure):
     http://www.diysubwoofers.org/sld
     NOT YET WORKING
     """
-    Qtc = 0.7                           # where does this come from?
+    Vmin = Float(3)
+    Vmax = Float(50)
+    Qtc = Float(0.7)
+    # http://www.ajdesigner.com/phpsubwooferclosed/resonance_frequency_equation_qts.php
+    # these don't make sense for a sealed enlosure, but GUI doesn't know that yet
+    Dv = Float(1)
+    Dmin = Float(0)
 
     def calculate_box(self):
         self.Qr = self.Qtc / self.driver.Qts
@@ -118,6 +126,7 @@ class SealedEnclosure(Enclosure):
 
     def calculate_response(self):
         self.Fb = self.Qr * self.driver.Fs
+        self.Qtc = self.Fb * self.driver.Qts / self.driver.Fs
         self.F3 = self.Fb * ((1 / self.Qtc**2 - 2 +
                          ((1 / self.Qtc**2 - 2)**2 + 4)**0.5) / 2)**0.5
         if self.Qtc > np.sqrt(0.5):
@@ -127,6 +136,10 @@ class SealedEnclosure(Enclosure):
         Fr = (self.F / self.Fb)**2
         self.dBmag = 10 * np.log(Fr**2 / ((Fr - 1)**2 + Fr / self.Qtc**2))
 
+    def _Vb_changed(self):
+        self.Vr = self.driver.Vas / self.Vb
+        self.Qr = np.sqrt(self.Vr + 1)
+        super(SealedEnclosure, self)._Vb_changed()
 
 class Driver(HasTraits):
     Vas = Float                  # compliance volume (liters)

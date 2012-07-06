@@ -21,8 +21,8 @@ SubView(MainWindow):
                 text << "Volume: %5.1f l " % model.Vb
             FloatSlider:
                 id: volume
-                minimum = 10
-                maximum = 150
+                minimum = model.Vmin
+                maximum = model.Vmax
                 value := model.Vb
             Label:
                 text << "Port diameter: %5.1f cm " % model.Dv
