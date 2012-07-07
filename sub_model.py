@@ -7,7 +7,7 @@ Author: Kelsey Jordahl
 Version: alpha
 Copyright: Kelsey Jordahl 2012
 License: GPLv3
-Time-stamp: <Sat Jul  7 14:59:16 EDT 2012>
+Time-stamp: <Sat Jul  7 18:56:35 EDT 2012>
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -28,6 +28,28 @@ from traits.api import (HasTraits, Int, Float, Bool, Enum, Str,
                         List, Range, Array, on_trait_change)
 from frequency_plot import FrequencyPlot
 
+class Model(HasTraits):
+    """The base model class that communicates with the Enaml view for
+    display and control.
+    Contains one or more enclosures.
+    """
+    Fmin = Float(20)          # min F, Hz
+    Fmax = Float(400)         # max F, Hz
+    nF = Int(100)             # number of F values to sample for graph
+    enclosures = List([])
+
+    def __init__(self, enclosure=None):
+        if enclosure is not None:
+            self.add_enclosure(enclosure)
+        self.F = np.logspace(np.log10(self.Fmin), np.log10(self.Fmax), self.nF)
+
+    def add_enclosure(self, enclosure):
+        self.enclosures.append(enclosure)
+
+    def set_plot(self, plot):
+        self.plot = plot
+
+
 class Enclosure(HasTraits):
     """Base class for a speaker enclosure"""
     Vb = Float
@@ -38,18 +60,12 @@ class Enclosure(HasTraits):
     Ql = Float(7)
     Vmin = Float(10)
     Vmax = Float(150)
-    Fmin = 20                           # min F, Hz
-    Fmax = 400                          # max F, Hz
-    nF = 100                            # number of F values to sample for graph
 
-    def __init__(self, driver):
+    def __init__(self, model, driver):
+        self.model = model
         self.driver = driver
-        self.F = np.logspace(np.log10(self.Fmin), np.log10(self.Fmax), self.nF)
         self.calculate_box()
         self.calculate_response()
-
-    def set_plot(self, plot):
-        self.plot = plot
 
     def calculate_box(self):
         raise NotImplementedError
@@ -60,7 +76,7 @@ class Enclosure(HasTraits):
     def _Vb_changed(self):
         self.calculate_response()
         try:
-            self.plot.update_plotdata()
+            self.model.plot.update_plotdata()
         except AttributeError:
             pass
 
@@ -89,7 +105,7 @@ class PortedEnclosure(Enclosure):
         self.min_port_diam()
         self.F3 = (self.driver.Vas / self.Vb)**0.44 * self.driver.Fs
         self.dBpeak = 20 * np.log(self.driver.Qts * (self.driver.Vas / self.Vb) ** 0.3 / 0.4)
-        Fn2 = (self.F / self.driver.Fs) ** 2
+        Fn2 = (self.model.F / self.driver.Fs) ** 2
         Fn4 = Fn2 ** 2
         A = (self.Fb / self.driver.Fs) ** 2
         B = A / self.driver.Qts + self.Fb / (self.driver.Fs * self.Ql)
@@ -100,7 +116,8 @@ class PortedEnclosure(Enclosure):
     def _Dv_changed(self):
         try:
             self.calculate_response()
-            self.plot.update_plotdata()
+            # plot doesn't depend on Dv
+            #self.model.plot.update_plotdata()
         except AttributeError, er:
             print er
 
@@ -132,7 +149,7 @@ class SealedEnclosure(Enclosure):
             dBpeak = 20 * np.log(self.Qtc**2 / (self.Qtc**2 - 0.25)**0.5)
         else:
             dBpeak = 0
-        Fr = (self.F / self.Fb)**2
+        Fr = (self.model.F / self.Fb)**2
         self.dBmag = 10 * np.log(Fr**2 / ((Fr - 1)**2 + Fr / self.Qtc**2))
 
     def _Vb_changed(self):
@@ -177,7 +194,7 @@ class Driver(HasTraits):
             self.get_params()
             self.enclosure.calculate_box()
             self.enclosure.calculate_response()
-            self.enclosure.plot.update_plotdata()
+            self.enclosure.model.plot.update_plotdata()
         except AttributeError:
             pass                        # driver params not yet set
 
@@ -187,16 +204,17 @@ class Driver(HasTraits):
         config.read('example.cfg')
 
 def main():
+    model = Model()
     driver = Driver()
-    sub = PortedEnclosure(driver)
+    sub = PortedEnclosure(model, driver)
+    model.add_enclosure(sub)
     driver.set_enclosure(sub)
-    plot = FrequencyPlot(sub)
-    sub.set_plot(plot)
+    plot = FrequencyPlot(model)
 
     import enaml
     with enaml.imports():
         from sub_view import SubView
-    view = SubView(model=sub, plot=plot)
+    view = SubView(model=model, plot=plot)
     view.show()
 
 if __name__ == '__main__':

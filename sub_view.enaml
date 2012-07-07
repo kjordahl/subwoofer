@@ -15,30 +15,30 @@ SubView(MainWindow):
                 text = "Driver"
             ComboBox:
                 id: driver
-                items = model.driver.drivernames
-                value := model.driver.drivername
+                items = model.enclosures[0].driver.drivernames
+                value := model.enclosures[0].driver.drivername
             Label:
-                text << "Volume: %5.1f l " % model.Vb
+                text << "Volume: %5.1f l " % model.enclosures[0].Vb
             FloatSlider:
                 id: volume
-                minimum = model.Vmin
-                maximum = model.Vmax
-                value := model.Vb
+                minimum = model.enclosures[0].Vmin
+                maximum = model.enclosures[0].Vmax
+                value := model.enclosures[0].Vb
             Label:
-                text << "Port diameter: %5.1f cm " % model.Dv
+                text << "Port diameter: %5.1f cm " % model.enclosures[0].Dv
             FloatSlider:
                 id: port_diameter
                 minimum = 1
                 maximum = 20
-                value := model.Dv
+                value := model.enclosures[0].Dv
             Label:
-                text << "Port length: %5.1f cm " % model.Lv
+                text << "Port length: %5.1f cm " % model.enclosures[0].Lv
             Label:
-                text << "Min port diam: %5.1f cm" % model.Dmin
+                text << "Min port diam: %5.1f cm" % model.enclosures[0].Dmin
             Label:
-                text << "Fb = %5.1f Hz" % model.Fb
+                text << "Fb = %5.1f Hz" % model.enclosures[0].Fb
             Label:
-                text << "F3 = %5.1f Hz" % model.F3
+                text << "F3 = %5.1f Hz" % model.enclosures[0].F3
         EnableCanvas:
             id: plot_window
             component = plot.get_plot_component()
