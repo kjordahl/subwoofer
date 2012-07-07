@@ -7,7 +7,7 @@ Author: Kelsey Jordahl
 Version: alpha
 Copyright: Kelsey Jordahl 2012
 License: GPLv3
-Time-stamp: <Fri Jul  6 19:14:47 EDT 2012>
+Time-stamp: <Sat Jul  7 14:59:16 EDT 2012>
 
     This program is free software: you can redistribute it and/or
     modify it under the terms of the GNU General Public License as
@@ -24,7 +24,6 @@ Time-stamp: <Fri Jul  6 19:14:47 EDT 2012>
 """
 import ConfigParser
 import numpy as np
-import matplotlib.pyplot as plt
 from traits.api import (HasTraits, Int, Float, Bool, Enum, Str,
                         List, Range, Array, on_trait_change)
 from frequency_plot import FrequencyPlot
